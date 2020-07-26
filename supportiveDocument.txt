@@ -1,3 +1,5 @@
+install the packages as per requirement.txt
+run migrations(if it doesn't work well I have added structure.sql for import database structure)
 
 create super user
 phython manage.py createsuperuser
