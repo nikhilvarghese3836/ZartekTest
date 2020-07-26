@@ -147,7 +147,7 @@ class PostLikesViewSet(viewsets.ViewSet):
                     list_image = PostImage.objects.filter(fk_post_id=process_id).values_list('images', flat=True)
                     queryset[0]['images'] = ['http://' + request.get_host() + settings.MEDIA_URL + imgdata for imgdata in list_image]
                     queryset[0]['weight'] = TagWeight.objects.filter(fk_post_id=process_id).values('tag', 'weight')
-                    dct_react=Reacts.objects.filter(fk_post_id=6).values('fk_user__username','fk_user__email').distinct('fk_user_id')
+                    dct_react=Reacts.objects.filter(fk_post_id=process_id).values('fk_user__username','fk_user__email').distinct('fk_user_id')
 
                     if dct_react:
                         react_users=[{'name':data['fk_user__username'],'email':data['fk_user__email']}  for data in dct_react]
