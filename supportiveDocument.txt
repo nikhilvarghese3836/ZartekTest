@@ -6,7 +6,7 @@ create super user
 phython manage.py createsuperuser
 
 obtain super user token 
-python manage.py drf_create_token 'super username' -602951a37a69465ffe8f6ea37281ec36b2ac8693,bd5a53a841b7e3b8a25694ac2659286b05bfc8a1
+python manage.py drf_create_token 'super username' -602951a37a69465ffe8f6ea37281ec36b2ac8693,bd5a53a841b7e3b8a25694ac2659286b05bfc8a1,43ae62ed9371d2cd997f01c848a45b69a2b23344
 
 
 Use POSTMAN for api testing
@@ -53,6 +53,15 @@ USER APIS
 
 -get post of users as relevent localhost:8000/users/react/ method -get
  	sent token as format- headers = {'Authorization': 'Token 0deaadbb966fea717d8caed9715f1a351d4ec4b6'}
+	according to last react
+	if like, show similar post first then not relevent post 
+	if dislike, show similar post last of the response list 
+	
+	-response	
+		the reaction of the user with each post will be getting in 'reaction' key
+		the number of likes/dislikes  with each post will be getting in 'reaction_count' key
+		pagenation has been done in return reponse key with intger value 
+
 
 -post react on a post
 

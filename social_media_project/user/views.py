@@ -60,9 +60,16 @@ class ReactViewSet(viewsets.ViewSet):
                 queryset = list(Posts.objects.values())
             else:
                 lst_return=[]
-                last_reacted=Reacts.objects.filter(fk_user_id=request.user.id).order_by('-timestamp').values('fk_post_id','react')
+                last_reacted=Reacts.objects.filter(fk_user_id=request.user.id).order_by('-timestamp').annotate(
+                    reaction=Case(When(react=True, then=Value('like')), When(react=False, then=Value('dislike')),
+                                  output_field=CharField())).values('fk_post_id','react','reaction')
+                dct_react_check = {data['fk_post_id']: data['reaction'] for data in last_reacted}
+                dct_react_count = Reacts.objects.annotate(
+                    reaction=Case(When(react=True, then=Value('like')), When(react=False, then=Value('dislike')),
+                                  output_field=CharField())).values('fk_post_id','reaction').annotate(
+                    count=Count('reaction')).values('fk_post_id','reaction', 'count')
+                dct_react_count_check = {data['fk_post_id']: {data['reaction']: data['count']} for data in dct_react_count}
                 if(last_reacted):
-
                     weightData=TagWeight.objects.filter(fk_post_id=last_reacted[0]['fk_post_id']).order_by('-weight').values_list('tag',flat=True)
                     data_check = ''.join(weightData)
                     total_list=TagWeight.objects.exclude(fk_post_id=last_reacted[0]['fk_post_id']).order_by('fk_post_id','-weight').values()
@@ -86,13 +93,24 @@ class ReactViewSet(viewsets.ViewSet):
                         if last_reacted[0]['react']:
                             lst_return.extend(Posts.objects.filter(pk_bint_id__in=predict_list).exclude(pk_bint_id=last_reacted[0]['fk_post_id']).values())
                             lst_return.extend(Posts.objects.exclude(pk_bint_id__in=predict_list).exclude(pk_bint_id=last_reacted[0]['fk_post_id']).values())
+                            lst_return.extend(Posts.objects.filter( pk_bint_id=last_reacted[0]['fk_post_id']).values())
+
                         else:
                             lst_return.extend(Posts.objects.exclude(pk_bint_id__in=predict_list).exclude(pk_bint_id=last_reacted[0]['fk_post_id']).values())
                             lst_return.extend(Posts.objects.filter(pk_bint_id__in=predict_list).exclude(pk_bint_id=last_reacted[0]['fk_post_id']).values())
+                            lst_return.extend(Posts.objects.filter(pk_bint_id=last_reacted[0]['fk_post_id']).values())
                         for data in lst_return:
                             list_image = PostImage.objects.filter(fk_post_id=data['pk_bint_id']).values_list('images',flat=True)
                             data['images'] = ['http://' + request.get_host() + settings.MEDIA_URL + imgdata for imgdata in list_image]
                             data['weight'] = TagWeight.objects.filter(fk_post_id=data['pk_bint_id']).values('tag','weight')
+                            if data['pk_bint_id'] in dct_react_check:
+                                data['reaction']=dct_react_check[data['pk_bint_id']]
+                            else:
+                                data['reaction']=None
+                            if data['pk_bint_id'] in dct_react_count_check:
+                                data['reaction_count']=dct_react_count_check[data['pk_bint_id']]
+                            else:
+                                data['reaction_count']=None
                     else:
                         return Response({"status": True, "data": lst_return})
                 else:
@@ -101,6 +119,14 @@ class ReactViewSet(viewsets.ViewSet):
                         list_image = PostImage.objects.filter(fk_post_id=data['pk_bint_id']).values_list('images',flat=True)
                         data['images'] = ['http://' + request.get_host() + settings.MEDIA_URL + imgdata for imgdata in list_image]
                         data['weight'] = TagWeight.objects.filter(fk_post_id=data['pk_bint_id']).values('tag', 'weight')
+                        if data['pk_bint_id'] in dct_react_check:
+                            data['reaction'] = dct_react_check[data['pk_bint_id']]
+                        else:
+                            data['reaction'] = None
+                        if data['pk_bint_id'] in dct_react_count_check:
+                            data['reaction_count'] = dct_react_count_check[data['pk_bint_id']]
+                        else:
+                            data['reaction_count'] = None
             return_data=paginate(lst_return)
             return Response({"status":True,"data":return_data})
         except Exception as e:
