@@ -1,0 +1,65 @@
+
+create super user
+phython manage.py createsuperuser
+
+obtain super user token 
+python manage.py drf_create_token 'super username' -602951a37a69465ffe8f6ea37281ec36b2ac8693,bd5a53a841b7e3b8a25694ac2659286b05bfc8a1
+
+ADMIN APIS
+
+-create post-
+	API-localhost:8000/posts/posts/ Method-POST
+	request.body:
+		title,description,weight,images
+		sample:
+			title: My post1,
+			description: This post is regarding cat data,
+	       
+			weight": {
+		    		"sky": 4,
+		    		"land": 3,
+		    		"ocean": 2
+				}
+-get all post-
+	API-localhost:8000/posts/posts/ Method-GET
+
+-Admin should be able to view the number of like/disliked of a post
+	API-localhost:8000/posts/postlikes/
+		query contains: id
+		response will show details of the post along with a key 'reaction_count' which denotes count of like/dislike of a post
+	
+USER APIS
+
+-create user 
+	API-localhost:8000/users/users/ Method-POST
+	request.body:
+		username,password
+		sample: 
+			username: nikhil
+			password: mypassword
+	save the token for later use- bd5a53a841b7e3b8a25694ac2659286b05bfc8a1
+
+-get user to get the details
+	API-localhost:8000/users/getusers/
+	sent token as format- headers = {'Authorization': 'Token 0deaadbb966fea717d8caed9715f1a351d4ec4b6'}
+	get the details of each user for admin specific user details for tokenized user
+
+
+-get post of users as relevent localhost:8000/users/react/ method -get
+ 	sent token as format- headers = {'Authorization': 'Token 0deaadbb966fea717d8caed9715f1a351d4ec4b6'}
+
+-post react on a post
+
+	API-localhost:8000/users/react/ method -post
+	request.body contains:
+		post_id
+		reaction(True/False)
+
+-API that returns a list of all the users who liked a post
+	localhost:8000/users/likedetails/ Method -GET
+			query contains: id
+			response will show details of the post along with a key 'reacted_users' which denotes who all are reacted to a post
+
+
+ 
+
